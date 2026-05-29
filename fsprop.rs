@@ -59,7 +59,7 @@ pub fn fsprop(
     cxy: usize,
     r_cavity: f64,
     dr: f64,
-    lvec: &Array1<i32>
+    lvec: &Array1<i64>
 ) -> FsPropResult {
     let t_start = Instant::now();
     let nm = ur.nrows();

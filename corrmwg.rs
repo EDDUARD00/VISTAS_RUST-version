@@ -15,7 +15,7 @@ pub fn corrmwg(
     uxyffc: &Array3<f64>,
     uxyffs: &Array3<f64>,
     rwg: f64,
-    lvec: &Array1<i32>,
+    lvec: &Array1<i64>,
 ) -> Corrmwg {
     
     let t_start = Instant::now();

@@ -8,16 +8,16 @@ pub struct Params {
     pub c0: f64,   // vacuum speed of light [m/s]
 
     // General Physical Parameters
-    pub Rtc: [f64; 9],        // top mirror reflectivity (c-modes)
-    pub Rts: [f64; 9],        // top mirror reflectivity (s-modes)
-    pub Rbc: [f64; 9],        // bottom mirror reflectivity (c-modes)
-    pub Rbs: [f64; 9],        // bottom mirror reflectivity (s-modes)
-    pub alpha_ic: [f64; 9],   // internal losses [cm-1] (c-modes)
-    pub alpha_is: [f64; 9],   // internal losses [cm-1] (s-modes)
+    pub Rtc: [f64; 15],        // top mirror reflectivity (c-modes)
+    pub Rts: [f64; 15],        // top mirror reflectivity (s-modes)
+    pub Rbc: [f64; 15],        // bottom mirror reflectivity (c-modes)
+    pub Rbs: [f64; 15],        // bottom mirror reflectivity (s-modes)
+    pub alpha_ic: [f64; 15],   // internal losses [cm-1] (c-modes)
+    pub alpha_is: [f64; 15],   // internal losses [cm-1] (s-modes)
     pub tau_n: f64,           // carrier-lifetime [s]
     pub tau_esc: f64,         // thermionic emission lifetime [s]
     pub tau_cap: f64,         // ambipolar diffusion time [s]
-    pub beta: [f64; 9],       // spontaneous recombination coeff
+    pub beta: [f64; 15],       // spontaneous recombination coeff
     pub eta_i: f64,           // current injection efficiency
     pub rs: f64,              // current spreading coefficient [cm]
     pub DN: f64,        // ambipolar diffusion coeff. [cm2/s]
@@ -29,7 +29,7 @@ pub struct Params {
     pub g0: f64,              // linear gain coefficient [cm2]
     pub ng: f64,              // group refractive index
     pub epsilon: f64,         // gain compression factor [cm3]
-    pub Gamma: [f64; 9],      // optical confinement factor
+    pub Gamma: [f64; 15],      // optical confinement factor
 
     // Geometrical Parameters
     pub l: f64,               // effective cavity length [cm]
@@ -89,7 +89,7 @@ pub struct Params {
 impl Params {
     pub fn new() -> Self {
         // Shared array values
-        let ones_9 = [1.0; 9];
+        let ones_15 = [1.0; 15];
         
         // Geometric calculations
         let R: f64 = 8e-4;
@@ -116,16 +116,16 @@ impl Params {
             kb: 1.381e-23,
             c0: 2.998e8,
 
-            Rtc: ones_9.map(|x| x * 0.997),
-            Rts: ones_9.map(|x| x * 0.997),
-            Rbc: ones_9.map(|x| x * 0.9985),
-            Rbs: ones_9.map(|x| x * 0.9985),
-            alpha_ic: [40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 39.2, 40.0, 40.0], // 40 * 0.98 for 7th element
-            alpha_is: ones_9.map(|x| x * 40.0),
+            Rtc: ones_15.map(|x| x * 0.997),
+            Rts: ones_15.map(|x| x * 0.997),
+            Rbc: ones_15.map(|x| x * 0.9985),
+            Rbs: ones_15.map(|x| x * 0.9985),
+            alpha_ic: [40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 39.2, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0, 40.0], // 40 * 0.98 for 7th element
+            alpha_is: ones_15.map(|x| x * 40.0),
             tau_n: 2.5e-9,
             tau_esc: 400e-12,
             tau_cap: 45e-12,
-            beta: ones_9.map(|x| x * 3e-5),
+            beta: ones_15.map(|x| x * 3e-5),
             eta_i: 1.0,
             rs: 1e-4,
             DN: 15.0,
@@ -136,7 +136,7 @@ impl Params {
             g0: 4e-16,
             ng: 4.2,
             epsilon: 5e-17,
-            Gamma: ones_9.map(|x| x * 0.03),
+            Gamma: ones_15.map(|x| x * 0.03),
 
             l: 900e-7,
             dqw: 8e-7,

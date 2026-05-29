@@ -48,7 +48,7 @@ fn solve_fmodes(guess: f64, l: i32, v: f64) -> f64 {
     x
 }
 
-pub fn lpcalc(lambda: f64, nc: f64, dn: f64, a: f64, r_max: f64, cr: usize) -> LPCalcResult {
+pub fn LPcalc(lambda: f64, nc: f64, dn: f64, a: f64, r_max: f64, cr: usize) -> LPCalcResult {
     let t_start = Instant::now();
     
     // 1. Calculate the normalized frequency (V-number)
@@ -58,13 +58,19 @@ pub fn lpcalc(lambda: f64, nc: f64, dn: f64, a: f64, r_max: f64, cr: usize) -> L
     let lvec = [0, 1, 2, 0, 3, 1, 4, 2, 0, 5, 3, 6, 1, 4];
     let x0 = [1.0, v / 2.0, 3.8, 3.95, 0.75 * v, 0.75 * v, 0.75 * v, 0.75 * v, 0.75 * v];
     
-    // 2. Determine number of guided modes
+    // 2. Determine number of guided modes safely
     let mut nm = 1;
     while nm - 1 < vvec.len() && vvec[nm - 1] < v {
         nm += 1;
     }
     
-    if v > vvec[nm - 1] {
+    // Safeguard: Ensure nm never exceeds the total available mode types in lvec
+    if nm > lvec.len() {
+        nm = lvec.len();
+    }
+    
+    // Safely check warning bounds without panicking on high V values
+    if nm > vvec.len() || v > vvec[vvec.len() - 1] {
         println!("WARNING: modes above limit not calculated! V = {:.3}", v);
     }
 
@@ -74,11 +80,13 @@ pub fn lpcalc(lambda: f64, nc: f64, dn: f64, a: f64, r_max: f64, cr: usize) -> L
     // 3. Compute the spatial profile for each mode
     for i in 0..nm {
         let l = lvec[i];
+        
+        // CORRECTION: Bounded guess strategy to prevent out of bounds on x0
         let guess = if i < x0.len() { x0[i] } else { 0.75 * v };
         
         // Solve the eigenvalue equation
         let x_val = solve_fmodes(guess, l, v);
-        let y_val = (v.powi(2) - x_val.powi(2)).max(0.0).sqrt(); // Corrected Physics Bug!
+        let y_val = (v.powi(2) - x_val.powi(2)).max(0.0).sqrt(); 
 
         let cx = Complex64::new(x_val, 0.0);
         let cy = Complex64::new(y_val, 0.0);
@@ -89,7 +97,15 @@ pub fn lpcalc(lambda: f64, nc: f64, dn: f64, a: f64, r_max: f64, cr: usize) -> L
         for j in 0..=cr {
             let r = (j as f64) * dr;
             
-            if r < a {
+            // CORRECTION: Separated the origin singularity loop check so it handles normalizing 
+            // values correctly instead of blindly overwriting the standard core block parameters
+            if j == 0 {
+                if l == 0 {
+                    ur[[i, 0]] = 1.0; // At r=0, J0(0) = 1, normalized to J0(x_val)
+                } else {
+                    ur[[i, 0]] = 0.0; // Higher-order fields are zero at the origin center
+                }
+            } else if r < a {
                 // Core
                 let j_val = besselj(l as f64, Complex64::new(x_val * r / a, 0.0)).unwrap_or(Complex64::new(0.0, 0.0)).re;
                 ur[[i, j]] = j_val / j_norm;
@@ -97,16 +113,6 @@ pub fn lpcalc(lambda: f64, nc: f64, dn: f64, a: f64, r_max: f64, cr: usize) -> L
                 // Cladding
                 let k_val = besselk(l as f64, Complex64::new(y_val * r / a, 0.0)).unwrap_or(Complex64::new(0.0, 0.0)).re;
                 ur[[i, j]] = k_val / k_norm;
-            }
-            
-            // Handle Origin Singularity explicitly
-            if j == 0 {
-                if l == 0 {
-                    let j0_norm = besselj(0.0, cx).unwrap_or(Complex64::new(1e-15, 0.0)).re;
-                    ur[[i, 0]] = 1.0 / j0_norm;
-                } else {
-                    ur[[i, 0]] = 0.0;
-                }
             }
         }
     }

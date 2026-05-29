@@ -53,3 +53,19 @@ pub fn xcorr2(a: &Array2<f64>, b: &Array2<f64>) -> Array2<f64> {
     }
     out
 }
+
+
+/// 1D Linear Interpolation for fsprop
+pub fn interp1(x: &Array1<f64>, y: &Array1<f64>, xq: f64) -> f64 {
+    let n = x.len();
+    if xq <= x[0] { return y[0]; }
+    if xq >= x[n - 1] { return 0.0; } // Modes decay to 0 outside the boundary
+
+    for i in 0..(n - 1) {
+        if xq >= x[i] && xq <= x[i + 1] {
+            let t = (xq - x[i]) / (x[i + 1] - x[i]);
+            return y[i] + t * (y[i + 1] - y[i]);
+        }
+    }
+    0.0
+}
